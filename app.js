@@ -1,8 +1,6 @@
 const SUPABASE_URL = "https://txkubgewibjuvgbfejgw.supabase.co";
 const SUPABASE_ANON_PUBLIC_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wcXpld3dpdmh4Y3hrbXZrY2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwMDQ2NTMsImV4cCI6MjA3NjU4MDY1M30.UadMDRpJw0kGmo3etjnfL8xmnTH6zd6MIhFHG_m67hI";
-const SERVICE_ROLE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wcXpld3dpdmh4Y3hrbXZrY2d6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTAwNDY1MywiZXhwIjoyMDc2NTgwNjUzfQ.yO_Oi1tn93ER5NqvrMApbsEcIrsRoXVMMqABgTFWaPs";
 const GEMINI_API_KEY = "AIzaSyBjWVI6rAzvoEWcJb24GIaZneKLutky4eo";
 
 class GeradorPlanoAula {
@@ -19,7 +17,7 @@ class GeradorPlanoAula {
   }
 
   inicializarEventos() {
-    this.form.addEventListener("submit", async (e) => this.gerarPlano(e));
+    this.form.addEventListener("submit", (e) => this.gerarPlano(e));
   }
 
   async gerarPlano(e) {
@@ -28,7 +26,6 @@ class GeradorPlanoAula {
     const dados = this.obterDadosFormulario();
 
     if (!this.validarDados(dados)) {
-      this.exibirErro("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
 
@@ -36,20 +33,18 @@ class GeradorPlanoAula {
     this.ocultarMensagens();
 
     try {
-      //Gerar plano com IA
+      // Gerar plano com IA
       const planoIA = await this.gerarPlanoComIA(dados);
 
-      //Salvar no Supabase
+      // Salvar no Supabase
       await this.salvarNoSupabase(dados, planoIA);
 
-      //Exibir plano gerado
+      // Exibir plano gerado
       this.exibirResultado(planoIA);
       this.mostrarSucesso("Plano de aula gerado com sucesso!");
     } catch (error) {
       console.error("Erro ao gerar plano de aula:", error);
-      this.exibirErro(
-        "Ocorreu um erro ao gerar o plano de aula. Tente novamente."
-      );
+      this.mostrarErro(this.tratarErro(error));
     } finally {
       this.mostrarLoading(false);
     }
@@ -89,7 +84,7 @@ class GeradorPlanoAula {
     const prompt = this.criarPrompt(dados);
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: {
@@ -108,6 +103,8 @@ class GeradorPlanoAula {
           generationConfig: {
             temperature: 0.7,
             maxOutputTokens: 2000,
+            topP: 0.8,
+            topK: 40,
           },
         }),
       }
@@ -132,15 +129,15 @@ class GeradorPlanoAula {
 
   criarPrompt(dados) {
     const seriesMap = {
-      1: "1º ano do Ensino Fundamental",
-      2: "2º ano do Ensino Fundamental",
-      3: "3º ano do Ensino Fundamental",
-      4: "4º ano do Ensino Fundamental",
-      5: "5º ano do Ensino Fundamental",
-      6: "6º ano do Ensino Fundamental",
-      7: "7º ano do Ensino Fundamental",
-      8: "8º ano do Ensino Fundamental",
-      9: "9º ano do Ensino Fundamental",
+      "1ano": "1º ano do Ensino Fundamental",
+      "2ano": "2º ano do Ensino Fundamental",
+      "3ano": "3º ano do Ensino Fundamental",
+      "4ano": "4º ano do Ensino Fundamental",
+      "5ano": "5º ano do Ensino Fundamental",
+      "6ano": "6º ano do Ensino Fundamental",
+      "7ano": "7º ano do Ensino Fundamental",
+      "8ano": "8º ano do Ensino Fundamental",
+      "9ano": "9º ano do Ensino Fundamental",
       "1medio": "1º ano do Ensino Médio",
       "2medio": "2º ano do Ensino Médio",
       "3medio": "3º ano do Ensino Médio",
@@ -155,62 +152,56 @@ class GeradorPlanoAula {
       artes: "Artes",
       educacao_fisica: "Educação Física",
       ingles: "Língua Inglesa",
-      fisica: "Física",
-      quimica: "Química",
-      biologia: "Biologia",
-      sociologia: "Sociologia",
     };
 
-    return `Crie um plano de aula detalhado 
-        
-        INFORMAÇÕES:
-        
-        - Tema da aula: ${dados.tema} 
-        - Serie/Ano: ${seriesMap[dados.serie] || dados.serie} 
-        - Componente Curricular: ${componentesMap[dados.componente]}
-        - Duração da aula: ${dados.duracao} minutos
-        - Detalhes adicionais: ${dados.detalhes || "Não informado"}
+    return `Como especialista em educação brasileira, crie um plano de aula em formato JSON.
 
-        ESTRUTURA OBRIGATÓRIA (retorne APENAS JSON):
+DADOS:
+- Tema: ${dados.tema}
+- Série: ${seriesMap[dados.serie] || dados.serie}
+- Matéria: ${componentesMap[dados.componente] || dados.componente}
+- Duração: ${dados.duracao} minutos
+- Observações: ${dados.detalhes || "Nenhuma"}
+
+ESTRUTURA DO JSON (retorne APENAS isso):
 
 {
-  "introducao_ludica": "Texto criativo e engajador para introduzir o tema de forma lúdica e interessante para os alunos",
-  "objetivo_bncc": "Objetivo de aprendizagem específico alinhado com a BNCC. Inclua o código da habilidade se possível",
+  "introducao_ludica": "Abordagem criativa para engajar os alunos",
+  "objetivo_bncc": "Objetivo alinhado à Base Nacional Comum Curricular",
   "passo_a_passo": [
-    "Passo 1 detalhado (aproximadamente 10-15 minutos)",
-    "Passo 2 detalhado (aproximadamente 10-15 minutos)", 
-    "Passo 3 detalhado (aproximadamente 10-15 minutos)",
-    "Passo 4 detalhado (até completar o tempo total)"
+    "Atividade 1 com tempo estimado",
+    "Atividade 2 com tempo estimado",
+    "Atividade 3 com tempo estimado",
+    "Atividade 4 com tempo estimado"
   ],
-  "rubrica_avaliacao": "Critérios claros e objetivos para avaliação do aprendizado dos alunos"
+  "rubrica_avaliacao": "Critérios de avaliação mensuráveis"
 }
 
-REGRAS IMPORTANTES:
-1. Retorne APENAS o JSON válido, sem markdown, sem texto adicional
-2. O plano deve ser adequado para a série indicada
-3. A introdução deve ser realmente lúdica e engajadora
-4. Os passos devem ser práticos e executáveis em sala de aula
-5. A rubrica deve ter critérios mensuráveis
-6. Use linguagem clara e objetiva em português
-        
-        `.trim();
+REGRAS:
+1. JSON válido apenas, sem texto extra
+2. Conteúdo adequado para a série
+3. Linguagem clara em português
+4. Atividades práticas e executáveis`.trim();
   }
 
   parseRespostaIA(textoResposta) {
     try {
+      // Tenta encontrar JSON no texto
       const jsonMatch = textoResposta.match(/(\{[\s\S]*\})/);
       if (!jsonMatch) {
-        throw new Error("Json não encontrado na resposta.");
+        throw new Error("JSON não encontrado na resposta.");
       }
 
       const plano = JSON.parse(jsonMatch[0]);
 
+      // Valida estrutura básica
       const camposObrigatorios = [
         "introducao_ludica",
         "objetivo_bncc",
         "passo_a_passo",
         "rubrica_avaliacao",
       ];
+
       for (const campo of camposObrigatorios) {
         if (!plano[campo]) {
           throw new Error(
@@ -221,10 +212,8 @@ REGRAS IMPORTANTES:
 
       return plano;
     } catch (error) {
-      console.error("Erro no parse :", error, "Texto", textoResposta);
-      throw new Error(
-        "Erro ao analisar o plano de aula gerado pela IA." + error.message
-      );
+      console.error("Erro no parse:", error, "Texto:", textoResposta);
+      throw new Error("Erro ao processar resposta da IA: " + error.message);
     }
   }
 
@@ -233,19 +222,19 @@ REGRAS IMPORTANTES:
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        apikey: SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
-
+        apikey: SUPABASE_ANON_PUBLIC_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_PUBLIC_KEY}`,
         Prefer: "return=minimal",
       },
       body: JSON.stringify({
         tema: dadosInput.tema,
         serie: dadosInput.serie,
-        componente: dadosInput.componente,
-        duracao: dadosInput.duracao,
+        componente_curricular: dadosInput.componente,
+        duracao_aula: parseInt(dadosInput.duracao),
         plano_gerado: planoIA,
       }),
     });
+
     if (!response.ok) {
       const errorData = await response.text();
       console.error("Erro ao salvar no Supabase:", errorData);
@@ -267,11 +256,11 @@ REGRAS IMPORTANTES:
 
         <div class="plano-item">
             <h3>📝 Passo a passo da atividade</h3>
-            <ul>
+            <ol>
                 ${plano.passo_a_passo
-                  .map((passo, index) => `<li>${index + 1}. ${passo}</li>`)
+                  .map((passo) => `<li>${passo}</li>`)
                   .join("")}
-            </ul>
+            </ol>
         </div>
 
         <div class="plano-item">
@@ -289,7 +278,7 @@ REGRAS IMPORTANTES:
     this.gerarBtn.disabled = mostrar;
     this.gerarBtn.textContent = mostrar
       ? "⏳ Gerando..."
-      : "Gerar Plano de Aula";
+      : "🚀 Gerar Plano de Aula";
   }
 
   mostrarErro(mensagem) {
@@ -307,24 +296,34 @@ REGRAS IMPORTANTES:
     this.successMessage.style.display = "none";
   }
 
-  tratarErro(mensagem) {
+  tratarErro(error) {
     console.error("Erro detalhado:", error);
 
-    if (error.message.includes("API Key")) {
-      return "Erro de configuração: chave de API inválida ou ausente.";
-    } else if (
-      error.message.includes("network failure") ||
-      error.message.includes("Failed to fetch")
+    if (
+      error.message.includes("API key") ||
+      error.message.includes("API_KEY")
     ) {
-      return "Erro de rede: verifique sua conexão com a internet.";
+      return "Erro de configuração: Verifique a chave da API Gemini.";
+    } else if (
+      error.message.includes("network") ||
+      error.message.includes("fetch")
+    ) {
+      return "Erro de conexão: Verifique sua internet.";
     } else if (error.message.includes("JSON")) {
-      return "Erro ao processar a resposta da IA: formato inesperado.";
+      return "Erro ao processar resposta da IA. Tente novamente.";
+    } else if (
+      error.message.includes("not found") ||
+      error.message.includes("404") ||
+      error.message.includes("descontinuado")
+    ) {
+      return "Modelo de IA não disponível. Atualizando para versão mais recente...";
     } else {
-      return "Erro desconhecido: tente novamente mais tarde.";
+      return "Erro ao gerar plano. Tente novamente em alguns segundos.";
     }
   }
 }
 
+// Inicializar quando o DOM estiver carregado
 document.addEventListener("DOMContentLoaded", () => {
   new GeradorPlanoAula();
 });
