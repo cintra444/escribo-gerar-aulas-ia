@@ -83,8 +83,10 @@ class GeradorPlanoAula {
   async gerarPlanoComIA(dados) {
     const prompt = this.criarPrompt(dados);
 
+    const model = "gemini-2.5-flash";
+
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: {
@@ -105,6 +107,9 @@ class GeradorPlanoAula {
             maxOutputTokens: 2000,
             topP: 0.8,
             topK: 40,
+            responseMimeType: "application/json",
+            systemInstructions:
+              "Você é um planejador que cria planos de aula detalhados e estruturados para professores brasileiros. Responda APENAS com objeto JSON solicitado, sem texto introdutório ou explicativo.",
           },
         }),
       }
@@ -115,12 +120,12 @@ class GeradorPlanoAula {
     if (!response.ok) {
       console.error("Erro na resposta da API Gemini:", data);
       throw new Error(
-        data.error?.message || "Erro ao gerar plano de aula com IA."
+        data.error?.message || "Erro de servidor ao gerar plano de aula com IA."
       );
     }
 
     if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-      throw new Error("Resposta inesperada da API Gemini.");
+      throw new Error("Resposta vazia ou inesperada da API Gemini.");
     }
 
     const textoResposta = data.candidates[0].content.parts[0].text;
