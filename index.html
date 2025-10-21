@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Planos de Aula com IA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 Gerador de Planos de Aula com IA</h1>
+            <p>Crie planos de aula personalizados e alinhados com a BNCC em segundos!</p>
+        </header>
+
+        <section class="form-section">
+            <form id="geradorForm">
+                <div class="form-group">
+                    <label for="tema">🎯 Tema da Aula:</label>
+                    <input type="text" id="tema" required
+                        placeholder="Ex: Fotossíntese, Revolução Francesa, Operações Matemáticas...">
+                </div>
+
+                <div class="form-group">
+                    <label for="serie">📚 Série/Ano:</label>
+                    <select id="serie" required>
+                        <option value="">Selecione a série...</option>
+                        <option value="1ano">1º Ano - Ensino Fundamental</option>
+                        <option value="2ano">2º Ano - Ensino Fundamental</option>
+                        <option value="3ano">3º Ano - Ensino Fundamental</option>
+                        <option value="4ano">4º Ano - Ensino Fundamental</option>
+                        <option value="5ano">5º Ano - Ensino Fundamental</option>
+                        <option value="6ano">6º Ano - Ensino Fundamental</option>
+                        <option value="7ano">7º Ano - Ensino Fundamental</option>
+                        <option value="8ano">8º Ano - Ensino Fundamental</option>
+                        <option value="9ano">9º Ano - Ensino Fundamental</option>
+                        <option value="1medio">1º Ano - Ensino Médio</option>
+                        <option value="2medio">2º Ano - Ensino Médio</option>
+                        <option value="3medio">3º Ano - Ensino Médio</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="componente">📖 Componente Curricular:</label>
+                    <select id="componente" required>
+                        <option value="">Selecione o componente...</option>
+                        <option value="matematica">Matemática</option>
+                        <option value="portugues">Língua Portuguesa</option>
+                        <option value="ciencias">Ciências</option>
+                        <option value="historia">História</option>
+                        <option value="geografia">Geografia</option>
+                        <option value="artes">Artes</option>
+                        <option value="educacao_fisica">Educação Física</option>
+                        <option value="ingles">Língua Inglesa</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="duracao">⏱️ Duração da Aula (minutos):</label>
+                    <input type="number" id="duracao" value="50" min="30" max="120" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="detalhes">📝 Detalhes Adicionais (opcional):</label>
+                    <textarea id="detalhes" rows="3"
+                        placeholder="Recursos disponíveis, características da turma, objetivos específicos..."></textarea>
+                </div>
+
+                <button type="submit" class="btn" id="gerarBtn">
+                    🚀 Gerar Plano de Aula
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Gerando seu plano de aula com IA... Isso pode levar alguns segundos.</p>
+            </div>
+
+            <div class="error" id="errorMessage"></div>
+            <div class="success" id="successMessage"></div>
+        </section>
+
+        <section class="result-section" id="resultSection">
+            <h2>📋 Plano de Aula Gerado</h2>
+            <div id="planoConteudo"></div>
+            <button class="btn" onclick="window.location.reload()" style="margin-top: 20px;">
+                🎯 Gerar Novo Plano
+            </button>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
