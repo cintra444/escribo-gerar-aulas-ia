@@ -1,4 +1,4 @@
-const SUPABASE_URL = "https://txkubgewibjuvgbfejgw.supabase.co";
+const SUPABASE_URL = "https://opqzewwivhxcxkmvkcgz.supabase.co";
 const SUPABASE_ANON_PUBLIC_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wcXpld3dpdmh4Y3hrbXZrY2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwMDQ2NTMsImV4cCI6MjA3NjU4MDY1M30.UadMDRpJw0kGmo3etjnfL8xmnTH6zd6MIhFHG_m67hI";
 const GEMINI_API_KEY = "AIzaSyBjWVI6rAzvoEWcJb24GIaZneKLutky4eo";
@@ -93,6 +93,13 @@ class GeradorPlanoAula {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          systemInstruction: {
+            parts: [
+              {
+                text: "Você é um planejador que cria planos de aula detalhados e estruturados para professores brasileiros.",
+              },
+            ],
+          },
           contents: [
             {
               parts: [
@@ -104,12 +111,9 @@ class GeradorPlanoAula {
           ],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 2000,
+            maxOutputTokens: 4096,
             topP: 0.8,
             topK: 40,
-            responseMimeType: "application/json",
-            systemInstructions:
-              "Você é um planejador que cria planos de aula detalhados e estruturados para professores brasileiros. Responda APENAS com objeto JSON solicitado, sem texto introdutório ou explicativo.",
           },
         }),
       }
@@ -191,13 +195,24 @@ REGRAS:
 
   parseRespostaIA(textoResposta) {
     try {
-      // Tenta encontrar JSON no texto
-      const jsonMatch = textoResposta.match(/(\{[\s\S]*\})/);
-      if (!jsonMatch) {
-        throw new Error("JSON não encontrado na resposta.");
+      let jsonString = textoResposta.trim();
+
+      if (jsonString.startsWith("```")) {
+        jsonString = jsonString.substring(jsonString.indexOf("\n") + 1);
+      }
+      if (jsonString.endsWith("```")) {
+        jsonString = jsonString.substring(0, jsonString.lastIndexOf("```"));
       }
 
-      const plano = JSON.parse(jsonMatch[0]);
+      const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+
+      if (!jsonMatch) {
+        throw new Error(
+          "JSON completo não foi encontrado na resposta.Resposta da IA truncada."
+        );
+      }
+
+      const plano = JSON.parse(jsonMatch[0].trim());
 
       // Valida estrutura básica
       const camposObrigatorios = [
@@ -218,7 +233,7 @@ REGRAS:
       return plano;
     } catch (error) {
       console.error("Erro no parse:", error, "Texto:", textoResposta);
-      throw new Error("Erro ao processar resposta da IA: " + error.message);
+      throw new Error(`Erro ao processar resposta da IA:  ${error.message}`);
     }
   }
 
