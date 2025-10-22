@@ -2,6 +2,8 @@
 
 Uma aplicação web que gera planos de aula personalizados utilizando a API Gemini da Google e armazena os resultados no Supabase.
 
+[LINK - Gerador de Planos de Aula com IA](https://cintra444.github.io/escribo-gerar-aulas-ia/)
+
 ## 🚀 Funcionalidades
 
 - Geração de planos de aula personalizados com IA
@@ -99,12 +101,47 @@ SUPABASE_ANON_PUBLIC_KEY=sua_chave_supabase_aqui
 4. Push para a branch (`git push origin feature/NomeFeature`)
 5. Abra um Pull Request
 
-## 📝 Licença
+## 📊 Documentação da Escolha do Modelo de IA
 
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+### Por que o Google Gemini?
 
-Desenvolvedor
+1. **Custo-Benefício**
 
-Eber Cintra - Desenvolvedor Fullstack<br>
+   - Preços competitivos por requisição
+   - Plano gratuito generoso para testes e desenvolvimento
+   - Boa relação entre custo e qualidade das respostas
+
+2. **Qualidade das Respostas**
+
+   - Excelente compreensão do contexto educacional
+   - Capacidade de gerar conteúdo estruturado em formato JSON
+   - Respostas consistentes e bem formatadas
+
+3. **Recursos Técnicos**
+
+   - API REST de fácil integração
+   - Documentação clara e abrangente
+   - Suporte a múltiplos formatos de resposta
+   - Baixa latência nas requisições
+
+4. **Comparativo com Outras Opções**
+
+| Aspecto           | Google Gemini | GPT-3.5  | Claude   |
+| ----------------- | ------------- | -------- | -------- |
+| Custo             | Baixo         | Médio    | Alto     |
+| Tempo de Resposta | Rápido        | Médio    | Rápido   |
+| Qualidade         | Alta          | Alta     | Alta     |
+| Documentação      | Excelente     | Boa      | Boa      |
+| Limite Gratuito   | Generoso      | Limitado | Limitado |
+
+5. **Considerações de Implementação**
+   - Facilidade na estruturação do prompt
+   - Boa capacidade de seguir instruções específicas
+   - Consistência no formato das respostas
+   - Suporte robusto a erros e exceções
+
+## Desenvolvedor
+
+Eber Cintra - Desenvolvedor Fullstack<br><br>
 [<img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />](https://www.linkedin.com/in/ebercintra)
 [<img src="https://img.shields.io/badge/Portfolio-255E63?style=for-the-badge&logo=About.me&logoColor=white" />](https://portifolio-eber.netlify.app)
